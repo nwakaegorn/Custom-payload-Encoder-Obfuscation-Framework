@@ -1,32 +1,77 @@
-from flask import Flask, render_template, request
+import streamlit as st
 from encoder import PayloadEncoder
 from obfuscator import PayloadObfuscator
 from decoder import PayloadDecoder
 
-app = Flask(__name__)
+# -----------------------------
+# Page Title
+# -----------------------------
+st.set_page_config(
+    page_title="Custom Payload Encoder & Obfuscation Framework",
+    layout="centered"
+)
 
-@app.route("/", methods=["GET", "POST"])
-def index():
-    encoded = None
-    obfuscated = None
-    decoded = None
+st.title("Custom Payload Encoder & Obfuscation Framework")
 
-    if request.method == "POST":
-        payload = request.form.get("payload")
+st.write(
+    "Encode, obfuscate, and decode payloads securely."
+)
 
-        encoder = PayloadEncoder()
-        obfuscator = PayloadObfuscator()
-        decoder = PayloadDecoder()
+# -----------------------------
+# User Input
+# -----------------------------
+payload = st.text_area(
+    "Enter Payload",
+    height=150
+)
 
-        encoded = encoder.multi_layer_encode(payload)
-        obfuscated = obfuscator.reverse_string(encoded)
-        restored = obfuscator.reverse_string(obfuscated)
-        decoded = decoder.multi_layer_decode(restored)
+# -----------------------------
+# Process Button
+# -----------------------------
+if st.button("Process Payload"):
 
-    return render_template("index.html",
-                           encoded=encoded,
-                           obfuscated=obfuscated,
-                           decoded=decoded)
+    if payload.strip() == "":
+        st.warning("Please enter a payload")
 
-if __name__ == "__main__":
-    app.run(debug=True)
+    else:
+
+        try:
+            encoder = PayloadEncoder()
+            obfuscator = PayloadObfuscator()
+            decoder = PayloadDecoder()
+
+            # Encode
+            encoded = encoder.multi_layer_encode(payload)
+
+            # Obfuscate
+            obfuscated = obfuscator.reverse_string(encoded)
+
+            # Restore
+            restored = obfuscator.reverse_string(obfuscated)
+
+            # Decode
+            decoded = decoder.multi_layer_decode(restored)
+
+            # -----------------------------
+            # Results
+            # -----------------------------
+            st.success("Payload Processed Successfully")
+
+            st.subheader("Encoded Payload")
+            st.code(encoded)
+
+            st.subheader("Obfuscated Payload")
+            st.code(obfuscated)
+
+            st.subheader("Decoded Payload")
+            st.code(decoded)
+
+        except Exception as e:
+
+            st.error(f"Error: {str(e)}")
+
+# -----------------------------
+# Footer
+# -----------------------------
+st.markdown("---")
+st.write("System running successfully")
